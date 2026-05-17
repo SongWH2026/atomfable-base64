@@ -3,215 +3,273 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Free Online Base64 Encoder and Decoder for Text & Images - AtomFable</title>
-  <meta name="description" content="Free online Base64 encoder and decoder for text and images. URL encode and decode in your browser. 100% client-side privacy — no uploads." />
-  <meta name="keywords" content="Base64 encoder, Base64 decoder, URL encode, URL decode, online Base64, client-side, AtomFable" />
+  <title>Free Online Base64 Encoder and Decoder — Text, Image, File, Base64URL - AtomFable</title>
+  <meta name="description" content="Free online Base64 encoder and decoder — convert text, PNG, JPG, PDF, or any file to Base64 or data URI. Decode Base64 to image, Base64URL, hex, URL encoding. Private, runs in your browser." />
+  <meta name="keywords" content="Base64 encoder online, Base64 decoder free, image to Base64 converter, PNG to Base64, JPG to Base64, file to Base64, data URI generator, Base64URL encode decode, hex to Base64, decode Base64 to image, strip data URI prefix, URL percent encode, AtomFable" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {"@type":"Question","name":"How do I convert an image to Base64 online for free?","acceptedAnswer":{"@type":"Answer","text":"Open the Image & file → Base64 tab, drop or browse your PNG, JPG, GIF, or WebP file, choose Data URI or raw Base64, then copy the result. Encoding runs locally in your browser."}},
+      {"@type":"Question","name":"How do I decode Base64 to text or an image?","acceptedAnswer":{"@type":"Answer","text":"Paste your Base64 or data URI into the input box and click Decode. If the payload is an image, a preview and download button appear below."}},
+      {"@type":"Question","name":"What is the difference between Base64 and Base64URL?","acceptedAnswer":{"@type":"Answer","text":"Standard Base64 uses + and /. Base64URL uses - and _ and often omits padding. Base64URL is common in JWTs and URL-safe tokens."}},
+      {"@type":"Question","name":"Is an online Base64 tool safe? Are files uploaded?","acceptedAnswer":{"@type":"Answer","text":"AtomFable processes everything in your browser. Files and text are not sent to a server."}}
+    ]
+  }
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style type="text/tailwindcss">
-    @theme {
-      --font-sans: "Segoe UI", system-ui, -apple-system, sans-serif;
-    }
+    @theme { --font-sans: "Segoe UI", system-ui, -apple-system, sans-serif; }
     textarea::-webkit-scrollbar { width: 8px; }
-    textarea::-webkit-scrollbar-track { background: #0f172a; }
-    textarea::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-    textarea::-webkit-scrollbar-thumb:hover { background: #475569; }
-    .glow-title {
-      background: linear-gradient(135deg, #f8fafc 0%, #94a3b8 50%, #e2e8f0 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    textarea::-webkit-scrollbar-track { background: #f5f5f4; }
+    textarea::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
+    .page-title {
+      background: linear-gradient(135deg, #292524 0%, #b45309 55%, #d97706 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-    /* Plain CSS (no @apply) — stable with @tailwindcss/browser@4 across browsers */
     .btn-action {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border-radius: 0.75rem;
-      font-size: 0.875rem;
-      line-height: 1.25rem;
-      font-weight: 500;
-      border: 1px solid rgb(51 65 85 / 0.8);
-      background-color: rgb(30 41 59 / 0.6);
-      color: rgb(226 232 240);
-      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -4px rgb(0 0 0 / 0.2);
-      cursor: pointer;
-      transition: all 300ms;
+      width: 100%; padding: 0.6rem 0.75rem; border-radius: 0.625rem;
+      font-size: 0.8125rem; font-weight: 500;
+      border: 1px solid rgb(231 229 228); background: #fff; color: rgb(68 64 60);
+      cursor: pointer; transition: all 200ms;
     }
-    .btn-action:hover {
-      background-color: rgb(51 65 85 / 0.8);
-      border-color: rgb(100 116 139);
-      color: #fff;
+    .btn-action:hover { background: rgb(255 251 235); border-color: rgb(253 186 116); }
+    .btn-action:active { transform: scale(0.98); }
+    .btn-action.primary { background: rgb(217 119 6); border-color: rgb(217 119 6); color: #fff; }
+    .btn-action.primary:hover { background: rgb(180 83 9); border-color: rgb(180 83 9); color: #fff; }
+    .mode-tab[aria-selected="true"] {
+      background: #fff; color: rgb(180 83 9); border-color: rgb(253 186 116); font-weight: 600;
+      box-shadow: 0 1px 3px rgb(28 25 23 / 0.06);
     }
-    .btn-action:active {
-      transform: scale(0.98);
-    }
-    .btn-action.primary {
-      background-color: rgb(6 78 59 / 0.4);
-      border-color: rgb(4 120 87 / 0.5);
-    }
-    .btn-action.primary:hover {
-      background-color: rgb(6 95 70 / 0.5);
-      border-color: rgb(16 185 129);
-    }
+    .panel-hidden { display: none; }
+    .drop-zone.active { border-color: rgb(251 146 60); background: rgb(255 251 235); }
   </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased">
-  <!-- Full-page ambient background -->
+<body class="min-h-screen bg-[#faf8f5] text-stone-800 font-sans antialiased selection:bg-amber-200/50">
   <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-    <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(16,185,129,0.09),transparent)]"></div>
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-emerald-500/[0.06] blur-3xl rounded-full"></div>
-    <div class="absolute bottom-0 right-0 w-[400px] h-[400px] bg-slate-800/20 blur-3xl rounded-full translate-x-1/3 translate-y-1/3"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_-10%,rgba(251,191,36,0.12),transparent)]"></div>
   </div>
 
-  <nav class="sticky top-0 z-50 w-full bg-slate-950/70 border-b border-slate-800/80 backdrop-blur-md">
+  <header class="sticky top-0 z-50 bg-[#faf8f5]/90 border-b border-stone-200/70 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-      <a href="https://atomfable.com" class="flex items-center gap-2.5 sm:gap-3 group shrink-0">
-        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-800/80 border border-slate-700/80 group-hover:border-amber-500/40 transition-colors" aria-hidden="true">
-          <span class="text-sm leading-none text-amber-400/90">✦</span>
+      <a href="https://atomfable.com" class="flex items-center gap-3 group shrink-0">
+        <div class="w-10 h-10 flex items-center justify-center rounded-full bg-amber-100/80 border border-amber-200/80" aria-hidden="true">
+          <span class="text-base leading-none">✦</span>
         </div>
-
-        <span class="text-sm font-semibold text-slate-200 group-hover:text-amber-400 transition-colors duration-300">
-          Atom<span class="text-amber-400">Fable</span>
+        <span class="text-base font-semibold text-stone-700 group-hover:text-amber-700 transition-colors tracking-tight">
+          Atom<span class="text-amber-600">Fable</span>
         </span>
       </a>
-
-      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-        <span class="hidden md:inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium tracking-wide text-slate-400 bg-slate-800/60 border border-slate-700/80 truncate">
-          Base64 · URL Codec
-        </span>
-        <span class="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[10px] font-medium tracking-wide text-emerald-400/90 bg-emerald-950/40 border border-emerald-800/40 shrink-0">
-          <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-          <span class="hidden sm:inline">100% Client-Side</span>
-          <span class="sm:hidden">Local</span>
-        </span>
-      </div>
-
+      <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-medium text-teal-800 bg-teal-50 border border-teal-100">
+        <span class="hidden sm:inline">100% in browser</span>
+        <span class="sm:hidden">Local</span>
+      </span>
     </div>
-  </nav>
-
-  <header class="relative pt-12 sm:pt-14 pb-6 sm:pb-8 px-4 text-center">
-    <p class="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-slate-500 mb-3">
-      AtomFable Toolkit · Free online encoder &amp; decoder
-    </p>
-    <h1 class="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight glow-title leading-tight">
-      Base64 &amp; URL Codec
-    </h1>
-    <p class="mt-4 text-slate-400 text-sm max-w-xl mx-auto leading-relaxed">
-      Encode, decode, and transform text instantly — entirely in your browser.
-    </p>
   </header>
 
-  <div class="max-w-2xl mx-auto px-4 mb-8 sm:mb-10">
-    <p class="flex items-center justify-center gap-2 text-xs text-slate-500 text-center">
-      <svg class="w-3.5 h-3.5 text-emerald-500/70 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-16">
+    <div class="text-center mb-6">
+      <p class="text-[10px] sm:text-xs uppercase tracking-[0.15em] text-stone-400 mb-2">AtomFable · Base64 toolkit</p>
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight page-title">Base64 &amp; URL Codec</h1>
+      <p class="mt-3 text-stone-600 text-sm max-w-2xl mx-auto leading-relaxed">
+        Encode and decode text, images, and files — standard Base64, Base64URL, hex, and URL encoding.
+      </p>
+    </div>
+
+    <!-- What is Base64? -->
+    <details class="max-w-3xl mx-auto mb-8 rounded-2xl border border-amber-200/80 bg-amber-50/40 open:shadow-sm">
+      <summary class="px-5 py-4 cursor-pointer text-sm font-semibold text-stone-800 select-none">
+        What is Base64? When do people use it?
+      </summary>
+      <div class="px-5 pb-5 text-sm text-stone-600 leading-relaxed border-t border-amber-200/50">
+        <p class="mb-3 pt-1"><strong class="text-stone-800">Base64</strong> turns binary data (images, files, any bytes) into plain ASCII text using 64 safe characters: <code class="bg-white px-1 rounded text-xs">A–Z a–z 0–9 + /</code> with <code class="bg-white px-1 rounded text-xs">=</code> padding at the end.</p>
+        <p class="mb-3">It is <strong class="text-stone-800">not encryption</strong> — anyone can decode it. It is only for transport and storage in text-only places.</p>
+        <p class="font-medium text-stone-800 mb-2">Common use cases:</p>
+        <ul class="list-disc pl-5 space-y-1.5 mb-3">
+          <li><strong>Images in HTML/CSS/JSON</strong> — <code class="text-xs bg-white px-1 rounded">data:image/png;base64,...</code> embeds a small image without a separate file.</li>
+          <li><strong>Email attachments</strong> — MIME encodes binary as Base64 so mail systems handle it.</li>
+          <li><strong>APIs &amp; JWT</strong> — JSON Web Tokens and many APIs send binary or metadata as Base64 (often <em>Base64URL</em>: <code class="text-xs">-_</code> instead of <code class="text-xs">+/</code>).</li>
+          <li><strong>Config &amp; dev debugging</strong> — paste a certificate, hash, or small file as text in a form or log.</li>
+          <li><strong>Data URIs</strong> — bundle icons, fonts, or thumbnails inline in code or spreadsheets.</li>
+        </ul>
+        <p class="text-stone-500 text-xs">This page runs in your browser. Files are not uploaded to any server.</p>
+      </div>
+    </details>
+
+    <p class="flex items-center justify-center gap-2 text-xs text-stone-500 text-center mb-6">
+      <svg class="w-3.5 h-3.5 text-teal-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>
-      <span>All processing happens in your browser. Nothing is uploaded.</span>
+      All processing happens locally in your browser.
     </p>
-  </div>
 
-  <main class="relative max-w-7xl mx-auto px-4 pb-16">
-    <section class="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 items-stretch">
-      <!-- Input -->
-      <div class="flex flex-col rounded-2xl border border-slate-800 bg-slate-900/50 backdrop-blur-sm shadow-2xl shadow-black/40 overflow-hidden">
-        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/80">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Input</span>
-          <button id="btnClear" type="button"
-            class="text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400
-                   hover:text-white hover:border-slate-500 hover:bg-slate-800 transition-all duration-300">
-            Clear
-          </button>
+    <!-- Mode tabs -->
+    <div class="flex flex-wrap justify-center gap-2 mb-6" role="tablist" aria-label="Tool mode">
+      <button type="button" class="mode-tab text-sm px-4 py-2 rounded-full border border-stone-200 bg-white text-stone-600" data-mode="text" aria-selected="true">Text &amp; codecs</button>
+      <button type="button" class="mode-tab text-sm px-4 py-2 rounded-full border border-stone-200 bg-white text-stone-600" data-mode="file">Image &amp; file → Base64</button>
+    </div>
+
+    <!-- TEXT MODE -->
+    <div id="panel-text" role="tabpanel">
+      <section class="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 items-stretch">
+        <div class="flex flex-col rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100 bg-stone-50/80">
+            <span class="text-xs font-semibold uppercase tracking-wider text-stone-500">Input</span>
+            <button id="btnClear" type="button" class="text-xs px-3 py-1.5 rounded-lg border border-stone-200 text-stone-500 hover:bg-amber-50 hover:border-amber-300">Clear</button>
+          </div>
+          <textarea id="inputText" rows="12" placeholder="Plain text, Base64, Base64URL, hex, or data:image/... URI"
+            class="flex-1 w-full min-h-[240px] p-4 bg-white text-stone-800 placeholder-stone-400 resize-y focus:outline-none focus:ring-2 focus:ring-amber-100 text-sm font-mono leading-relaxed"></textarea>
+          <div class="px-4 py-2 border-t border-stone-100 text-xs text-stone-500"><span id="inputStats">0 characters</span></div>
         </div>
-        <textarea id="inputText" rows="14" placeholder="Paste text, Base64 string, or data URI here…"
-          class="flex-1 w-full min-h-[280px] p-4 bg-transparent text-slate-100 placeholder-slate-600
-                 resize-y focus:outline-none text-sm leading-relaxed font-mono"></textarea>
-        <div class="px-4 py-2 border-t border-slate-800 text-xs text-slate-500">
-          <span id="inputStats">0 characters</span>
+
+        <div class="flex flex-col justify-center gap-2 min-w-[200px] lg:min-w-[210px] py-2 max-h-[520px] overflow-y-auto">
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400 text-center">Base64</p>
+          <button id="btnB64Enc" type="button" class="btn-action primary">Encode</button>
+          <button id="btnB64Dec" type="button" class="btn-action">Decode</button>
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400 text-center mt-2">Base64URL</p>
+          <button id="btnB64UrlEnc" type="button" class="btn-action primary">Encode</button>
+          <button id="btnB64UrlDec" type="button" class="btn-action">Decode</button>
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400 text-center mt-2">URL (percent)</p>
+          <button id="btnUrlEnc" type="button" class="btn-action primary">Encode</button>
+          <button id="btnUrlDec" type="button" class="btn-action">Decode</button>
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400 text-center mt-2">Hex</p>
+          <button id="btnHexToB64" type="button" class="btn-action">Hex → Base64</button>
+          <button id="btnB64ToHex" type="button" class="btn-action">Base64 → Hex</button>
+          <button id="btnStripDataUri" type="button" class="btn-action mt-1">Strip data URI prefix</button>
+        </div>
+
+        <div class="flex flex-col rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100 bg-stone-50/80">
+            <span class="text-xs font-semibold uppercase tracking-wider text-stone-500">Output</span>
+            <button id="btnCopy" type="button" class="text-xs px-3 py-1.5 rounded-lg border border-amber-200 text-amber-700 hover:bg-amber-50">Copy</button>
+          </div>
+          <textarea id="outputText" rows="12" readonly placeholder="Result appears here…"
+            class="flex-1 w-full min-h-[240px] p-4 bg-stone-50/50 text-stone-800 placeholder-stone-400 resize-y focus:outline-none text-sm font-mono leading-relaxed"></textarea>
+          <div class="px-4 py-2 border-t border-stone-100 flex justify-between gap-2 text-xs text-stone-500">
+            <span id="outputStats">0 characters</span>
+            <span id="statusMsg" class="text-teal-600/0 transition-all"></span>
+          </div>
+        </div>
+      </section>
+
+      <section id="imagePreviewSection" class="hidden mt-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <h2 class="text-sm font-semibold text-stone-800">Decoded image preview</h2>
+          <button id="btnDownloadImage" type="button" class="text-xs px-3 py-1.5 rounded-lg border border-amber-200 text-amber-700 hover:bg-amber-50 font-medium">Download image</button>
+        </div>
+        <img id="imagePreview" alt="Decoded Base64 image" class="max-w-full max-h-80 rounded-lg border border-stone-200 mx-auto" />
+      </section>
+    </div>
+
+    <!-- FILE MODE -->
+    <div id="panel-file" class="panel-hidden" role="tabpanel">
+      <div class="max-w-3xl mx-auto space-y-6">
+        <div id="file-drop" class="drop-zone border-2 border-dashed border-stone-200 rounded-2xl bg-white p-10 text-center cursor-pointer hover:border-amber-300 transition-colors">
+          <input type="file" id="file-input" class="hidden" accept="image/*,*/*" />
+          <p class="text-3xl mb-2" aria-hidden="true">📎</p>
+          <p class="text-sm font-medium text-stone-700">Drop a file here or <span class="text-amber-600">browse</span></p>
+          <p class="text-xs text-stone-400 mt-2">Images, PDF, or any file — encoded locally</p>
+        </div>
+
+        <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm space-y-4">
+          <p class="text-xs font-semibold uppercase tracking-wider text-stone-500">Output format</p>
+          <label class="flex items-center gap-2 text-sm cursor-pointer">
+            <input type="radio" name="out-format" value="datauri" checked class="accent-amber-600" />
+            <span><strong class="text-stone-800">Data URI</strong> — <code class="text-xs text-stone-500">data:image/png;base64,...</code> (for HTML/CSS)</span>
+          </label>
+          <label class="flex items-center gap-2 text-sm cursor-pointer">
+            <input type="radio" name="out-format" value="raw" class="accent-amber-600" />
+            <span><strong class="text-stone-800">Raw Base64 only</strong> — payload without prefix (for APIs)</span>
+          </label>
+          <p id="file-meta" class="text-xs text-stone-500">No file selected.</p>
+          <div class="flex flex-wrap gap-2">
+            <button id="btnCopyFileOut" type="button" disabled class="btn-action primary w-auto px-5 opacity-50 cursor-not-allowed">Copy result</button>
+            <button id="btnSendToText" type="button" disabled class="btn-action w-auto px-5 opacity-50 cursor-not-allowed">Open in text panel</button>
+          </div>
+          <textarea id="fileOutput" rows="8" readonly placeholder="Encoded result will appear here…"
+            class="w-full p-3 rounded-xl border border-stone-200 bg-stone-50 text-xs font-mono text-stone-800 min-h-[120px]"></textarea>
         </div>
       </div>
-
-      <!-- Actions -->
-      <div class="flex flex-col justify-center gap-3 min-w-[200px] lg:min-w-[220px] py-2">
-        <button id="btnB64Enc" type="button" class="btn-action primary">Base64 Encode</button>
-        <button id="btnB64Dec" type="button" class="btn-action">Base64 Decode</button>
-        <div class="h-px bg-slate-800 my-1"></div>
-        <button id="btnUrlEnc" type="button" class="btn-action primary">URL Encode</button>
-        <button id="btnUrlDec" type="button" class="btn-action">URL Decode</button>
-        <p class="text-[10px] text-center text-slate-600 mt-2 leading-snug">
-          Click to transform · UTF-8 safe
-        </p>
-      </div>
-
-      <!-- Output -->
-      <div class="flex flex-col rounded-2xl border border-slate-800 bg-slate-900/50 backdrop-blur-sm shadow-2xl shadow-black/40 overflow-hidden">
-        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/80">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Output</span>
-          <button id="btnCopy" type="button"
-            class="text-xs px-3 py-1.5 rounded-lg border border-emerald-800/60 text-emerald-400
-                   hover:text-emerald-200 hover:border-emerald-500 hover:bg-emerald-950/50 transition-all duration-300">
-            Copy
-          </button>
-        </div>
-        <textarea id="outputText" rows="14" readonly placeholder="Result appears here…"
-          class="flex-1 w-full min-h-[280px] p-4 bg-transparent text-slate-100 placeholder-slate-600
-                 resize-y focus:outline-none text-sm leading-relaxed font-mono"></textarea>
-        <div class="px-4 py-2 border-t border-slate-800 flex items-center justify-between gap-2">
-          <span id="outputStats" class="text-xs text-slate-500">0 characters</span>
-          <span id="statusMsg" class="text-xs text-emerald-500/0 transition-all duration-300"></span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Image preview (Base64 decode) -->
-    <section id="imagePreviewSection" class="hidden mt-8 rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-      <h2 class="text-sm font-semibold text-slate-300 mb-3">Image Preview</h2>
-      <img id="imagePreview" alt="Decoded Base64 image preview" class="max-w-full max-h-64 rounded-lg border border-slate-700 mx-auto" />
-    </section>
+    </div>
   </main>
 
-  <!-- FAQ -->
-  <footer class="border-t border-slate-800/80 bg-slate-900/30">
-    <section class="max-w-3xl mx-auto px-4 py-12">
-      <h2 class="text-lg font-semibold text-slate-300 mb-6 text-center">Frequently Asked Questions (FAQ)</h2>
-      <div class="space-y-6 text-sm text-slate-500 leading-relaxed">
+  <footer class="border-t border-stone-200/80 bg-white/40">
+    <section class="max-w-3xl mx-auto px-4 py-12" id="faq">
+      <h2 class="text-base font-semibold text-stone-800 mb-2 text-center">Base64 encoder &amp; decoder — FAQ</h2>
+      <p class="text-xs text-stone-500 text-center mb-8 max-w-xl mx-auto">Answers for common searches: image to Base64, decode online, data URI, JWT, and more.</p>
+      <div class="space-y-6 text-sm text-stone-600 leading-relaxed">
         <article>
-          <h3 class="text-slate-400 font-medium mb-1">Is this tool safe for sensitive data?</h3>
-          <p>Yes. This is a <strong class="text-slate-400 font-normal">Secure Base64 string decoder for developers</strong> that runs entirely in your browser. Nothing is sent to any server — <strong class="text-slate-400 font-normal">100% client-side privacy</strong> is guaranteed.</p>
+          <h3 class="text-stone-800 font-medium mb-1">How do I convert an image to Base64 online for free?</h3>
+          <p>Switch to <strong>Image &amp; file → Base64</strong>, drop or browse a PNG, JPG, GIF, WebP, or SVG, then copy the <strong>Data URI</strong> (for HTML/CSS) or <strong>raw Base64</strong> (for APIs). No signup and no upload — encoding runs in your browser.</p>
         </article>
         <article>
-          <h3 class="text-slate-400 font-medium mb-1">Can I decode Base64 images here?</h3>
-          <p>When your input is a data URI or valid image Base64, you can <strong class="text-slate-400 font-normal">convert base64 data to image formats like PNG or JPG directly in browser</strong> using the preview panel after Base64 decode.</p>
+          <h3 class="text-stone-800 font-medium mb-1">How do I decode Base64 to text or view a Base64 image?</h3>
+          <p>Paste your string into the input box (plain Base64, Base64URL, or a full <code class="bg-stone-100 px-1 rounded text-xs">data:image/...</code> URI) and click <strong>Decode</strong>. Text appears in the output panel; image payloads show a preview and a download button.</p>
         </article>
         <article>
-          <h3 class="text-slate-400 font-medium mb-1">What is the difference between Base64 and URL encoding?</h3>
-          <p>Base64 encodes binary data into ASCII text (common for images and APIs). URL encoding (percent-encoding) escapes special characters for safe use in URLs and query strings.</p>
+          <h3 class="text-stone-800 font-medium mb-1">How do I convert PNG or JPG to a Base64 string for HTML and CSS?</h3>
+          <p>Encode the file on the file tab with <strong>Data URI</strong> selected. Paste the result into <code class="bg-stone-100 px-1 rounded text-xs">src</code> on an <code class="bg-stone-100 px-1 rounded text-xs">&lt;img&gt;</code> tag or into <code class="bg-stone-100 px-1 rounded text-xs">background-image: url(...)</code> in CSS. Keep icons small — very large data URIs hurt page load.</p>
         </article>
         <article>
-          <h3 class="text-slate-400 font-medium mb-1">Does it support Unicode / Multi-language text?</h3>
-          <p>Yes. All operations use UTF-8 via <code class="text-slate-400 bg-slate-800 px-1 rounded">TextEncoder</code> / <code class="text-slate-400 bg-slate-800 px-1 rounded">TextDecoder</code>, so multilingual text, characters, and symbols work correctly.</p>
+          <h3 class="text-stone-800 font-medium mb-1">How do I remove the data:image/png;base64, prefix from a data URI?</h3>
+          <p>Paste the full data URI into the text panel and click <strong>Strip data URI prefix</strong>. You get raw Base64 only — useful for APIs, databases, or JSON fields that expect the payload without the header.</p>
+        </article>
+        <article>
+          <h3 class="text-stone-800 font-medium mb-1">What is the difference between Base64 and Base64URL?</h3>
+          <p>Standard Base64 uses <code class="bg-stone-100 px-1 rounded">+</code> and <code class="bg-stone-100 px-1 rounded">/</code>. <strong>Base64URL</strong> replaces them with <code class="bg-stone-100 px-1 rounded">-</code> and <code class="bg-stone-100 px-1 rounded">_</code> and often drops <code class="bg-stone-100 px-1 rounded">=</code> padding — common in JWTs, OAuth tokens, and URL query parameters. Use the Base64URL buttons on this page for either format.</p>
+        </article>
+        <article>
+          <h3 class="text-stone-800 font-medium mb-1">What is a data URI and when should I use one?</h3>
+          <p>A data URI looks like <code class="bg-stone-100 px-1 rounded text-xs">data:image/png;base64,iVBORw0...</code>. The MIME type and encoding are in the prefix; the part after the comma is Base64. Use data URIs for small inline assets (favicons, sprites, email HTML). For large images, host a file and link to it instead.</p>
+        </article>
+        <article>
+          <h3 class="text-stone-800 font-medium mb-1">How do I encode a PDF or other file to Base64?</h3>
+          <p>On the file tab, select any file type (PDF, ZIP, JSON, etc.). Choose raw Base64 for API bodies or Data URI when you need the MIME prefix included. Click <strong>Open in text panel</strong> to decode or transform further.</p>
+        </article>
+        <article>
+          <h3 class="text-stone-800 font-medium mb-1">How do I convert hex to Base64 (or Base64 to hex)?</h3>
+          <p>Paste hexadecimal bytes (with or without spaces, optional <code class="bg-stone-100 px-1 rounded">0x</code>) and use <strong>Hex → Base64</strong>. For the reverse, decode or paste Base64 and click <strong>Base64 → Hex</strong> — handy for certificates, firmware, and crypto debugging.</p>
+        </article>
+        <article>
+          <h3 class="text-stone-800 font-medium mb-1">What is the difference between Base64 and URL encoding (percent encoding)?</h3>
+          <p><strong>Base64</strong> represents arbitrary binary data as text. <strong>URL encoding</strong> (percent encoding) escapes special characters in URLs and form data (e.g. space → <code class="bg-stone-100 px-1 rounded">%20</code>). They solve different problems; this tool supports both.</p>
+        </article>
+        <article>
+          <h3 class="text-stone-800 font-medium mb-1">Why does my Base64 decode fail or show garbled text?</h3>
+          <p>Common causes: wrong variant (try Base64URL decode), missing padding, line breaks in the string, or decoding binary as UTF-8 text. For images, ensure the payload is valid Base64 and use a <code class="bg-stone-100 px-1 rounded text-xs">data:image/...</code> prefix or let the tool auto-detect. Strip whitespace and try again.</p>
+        </article>
+        <article>
+          <h3 class="text-stone-800 font-medium mb-1">Is Base64 encryption? Can I use it to hide passwords?</h3>
+          <p>No. Base64 is encoding, not encryption — anyone can reverse it. Never use Base64 alone to protect passwords, API keys, or personal data. Use proper encryption and secrets management instead.</p>
+        </article>
+        <article>
+          <h3 class="text-stone-800 font-medium mb-1">Is this online Base64 encoder safe? Are my files uploaded to a server?</h3>
+          <p>No uploads. AtomFable runs entirely in your browser using JavaScript and the FileReader API. Your text and files never leave your device, which makes it suitable for quick local encoding without sending data to third parties.</p>
+        </article>
+        <article>
+          <h3 class="text-stone-800 font-medium mb-1">How do I decode a JWT payload (Base64URL)?</h3>
+          <p>A JWT has three dot-separated parts; the middle segment is Base64URL-encoded JSON. Copy that segment, paste it here, and click <strong>Base64URL Decode</strong>. Note: this only decodes the payload — it does not verify signatures.</p>
+        </article>
+        <article>
+          <h3 class="text-stone-800 font-medium mb-1">Does Base64 make files larger?</h3>
+          <p>Yes — Base64 expands binary size by roughly 33% because every 3 bytes become 4 ASCII characters. That is normal; use it when you need text-safe transport, not for compressing files.</p>
         </article>
       </div>
     </section>
-
     <section class="max-w-3xl mx-auto px-4 pb-6 text-center">
-      <p class="text-xs text-slate-600 leading-loose">
-        More AtomFable tools:
-        <a href="https://image.atomfable.com" class="text-slate-500 hover:text-amber-400 transition-all duration-300">Image Compressor</a>
-        <span class="text-slate-700"> · </span>
-        <span class="text-slate-600 cursor-not-allowed" aria-disabled="true" title="Coming soon">Code Sanitizer (coming soon)</span>
-        <span class="text-slate-700"> · </span>
-        <a href="https://atomfable.com" class="text-slate-500 hover:text-amber-400 transition-all duration-300">All tools (home)</a>
+      <p class="text-xs text-stone-500 leading-loose">
+        <a href="https://image.atomfable.com" class="hover:text-amber-700">Image Compressor</a>
+        <span class="text-stone-300"> · </span>
+        <a href="https://atomfable.com" class="hover:text-amber-700">All tools</a>
       </p>
     </section>
-
     <section class="max-w-3xl mx-auto px-4 pb-12" aria-label="Ad placement reserved">
-      <div class="w-full h-24 rounded-xl border border-dashed border-slate-800 bg-slate-900/20 flex items-center justify-center">
-        <span class="text-xs text-slate-700 tracking-widest uppercase">Ad slot · reserved</span>
+      <div class="w-full h-24 rounded-xl border border-dashed border-stone-200 bg-stone-50/80 flex items-center justify-center">
+        <span class="text-xs text-stone-400 tracking-widest uppercase">Ad slot · reserved</span>
       </div>
     </section>
-
-    <p class="text-center text-[10px] text-slate-700 pb-6">© 2026 AtomFable · Free Online Base64 Encoder and Decoder</p>
+    <p class="text-center text-[10px] text-stone-400 pb-6">© 2026 AtomFable</p>
   </footer>
 
   <script>
@@ -223,6 +281,12 @@
     const statusMsg = $("statusMsg");
     const imageSection = $("imagePreviewSection");
     const imagePreview = $("imagePreview");
+    const fileOutput = $("fileOutput");
+    const fileMeta = $("file-meta");
+    const btnCopyFileOut = $("btnCopyFileOut");
+    const btnSendToText = $("btnSendToText");
+
+    let previewDataUri = null;
 
     function updateStats() {
       inputStats.textContent = `${inputEl.value.length} characters`;
@@ -231,23 +295,16 @@
 
     function flashStatus(msg, ok = true) {
       statusMsg.textContent = msg;
-      statusMsg.className = ok
-        ? "text-xs text-emerald-400 transition-all duration-300"
-        : "text-xs text-red-400 transition-all duration-300";
+      statusMsg.className = ok ? "text-xs text-teal-600 transition-all" : "text-xs text-red-600 transition-all";
       clearTimeout(flashStatus._t);
       flashStatus._t = setTimeout(() => {
         statusMsg.textContent = "";
-        statusMsg.className = "text-xs text-emerald-500/0 transition-all duration-300";
+        statusMsg.className = "text-xs text-teal-600/0 transition-all";
       }, 2200);
     }
 
-    function utf8ToBytes(str) {
-      return new TextEncoder().encode(str);
-    }
-
-    function bytesToUtf8(bytes) {
-      return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-    }
+    function utf8ToBytes(str) { return new TextEncoder().encode(str); }
+    function bytesToUtf8(bytes) { return new TextDecoder("utf-8", { fatal: true }).decode(bytes); }
 
     function bytesToBase64(bytes) {
       let binary = "";
@@ -268,9 +325,40 @@
       return bytes;
     }
 
+    function bytesToBase64Url(bytes) {
+      return bytesToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    }
+
+    function base64UrlToBytes(s) {
+      let b64 = s.replace(/\s/g, "").replace(/-/g, "+").replace(/_/g, "/");
+      const pad = b64.length % 4;
+      if (pad) b64 += "=".repeat(4 - pad);
+      return base64ToBytes(b64);
+    }
+
+    function hexToBytes(hex) {
+      const cleaned = hex.replace(/\s/g, "").replace(/^0x/gi, "");
+      if (!cleaned.length || cleaned.length % 2 !== 0) throw new Error("Invalid hex string");
+      if (!/^[0-9a-fA-F]+$/.test(cleaned)) throw new Error("Invalid hex characters");
+      const bytes = new Uint8Array(cleaned.length / 2);
+      for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(cleaned.slice(i * 2, i * 2 + 2), 16);
+      return bytes;
+    }
+
+    function bytesToHex(bytes) {
+      return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function stripDataUri(s) {
+      const m = s.trim().match(/^data:[^;]+;base64,(.+)$/is);
+      if (m) return m[1].replace(/\s/g, "");
+      return s.trim().replace(/\s/g, "");
+    }
+
     function hideImagePreview() {
       imageSection.classList.add("hidden");
       imagePreview.removeAttribute("src");
+      previewDataUri = null;
     }
 
     function tryShowImagePreview(text) {
@@ -278,12 +366,14 @@
       const trimmed = text.trim();
       let dataUri = trimmed;
       if (!/^data:image\//i.test(trimmed)) {
-        if (/^[A-Za-z0-9+/=_-]+$/.test(trimmed.replace(/\s/g, "")) && trimmed.length > 64) {
-          dataUri = "data:image/png;base64," + trimmed.replace(/\s/g, "");
+        const raw = trimmed.replace(/\s/g, "");
+        if (/^[A-Za-z0-9+/=_-]+$/.test(raw) && raw.length > 64) {
+          dataUri = "data:image/png;base64," + raw;
         } else return;
       }
       const img = new Image();
       img.onload = () => {
+        previewDataUri = dataUri;
         imagePreview.src = dataUri;
         imageSection.classList.remove("hidden");
       };
@@ -296,11 +386,11 @@
       updateStats();
     }
 
-    function runTransform(fn) {
+    function runTransform(fn, opts = {}) {
       try {
         const result = fn(inputEl.value);
         setOutput(result);
-        hideImagePreview();
+        if (!opts.keepPreview) hideImagePreview();
         flashStatus("Done");
         return result;
       } catch (e) {
@@ -311,28 +401,30 @@
       }
     }
 
-    $("btnB64Enc").addEventListener("click", () => {
-      runTransform((v) => bytesToBase64(utf8ToBytes(v)));
+    function setMode(mode) {
+      document.querySelectorAll(".mode-tab").forEach((b) => {
+        b.setAttribute("aria-selected", b.dataset.mode === mode ? "true" : "false");
+      });
+      $("panel-text").classList.toggle("panel-hidden", mode !== "text");
+      $("panel-file").classList.toggle("panel-hidden", mode !== "file");
+    }
+
+    document.querySelectorAll(".mode-tab").forEach((btn) => {
+      btn.addEventListener("click", () => setMode(btn.dataset.mode));
     });
 
+    $("btnB64Enc").addEventListener("click", () => runTransform((v) => bytesToBase64(utf8ToBytes(v))));
     $("btnB64Dec").addEventListener("click", () => {
-      const result = runTransform((v) => bytesToUtf8(base64ToBytes(v)));
+      const result = runTransform((v) => bytesToUtf8(base64ToBytes(stripDataUri(v))), { keepPreview: true });
       if (result !== null) tryShowImagePreview(inputEl.value.trim());
     });
-
-    $("btnUrlEnc").addEventListener("click", () => {
-      runTransform((v) => encodeURIComponent(v));
-    });
-
-    $("btnUrlDec").addEventListener("click", () => {
-      runTransform((v) => {
-        try {
-          return decodeURIComponent(v.replace(/\+/g, " "));
-        } catch {
-          return decodeURIComponent(v);
-        }
-      });
-    });
+    $("btnB64UrlEnc").addEventListener("click", () => runTransform((v) => bytesToBase64Url(utf8ToBytes(v))));
+    $("btnB64UrlDec").addEventListener("click", () => runTransform((v) => bytesToUtf8(base64UrlToBytes(v))));
+    $("btnUrlEnc").addEventListener("click", () => runTransform((v) => encodeURIComponent(v)));
+    $("btnUrlDec").addEventListener("click", () => runTransform((v) => decodeURIComponent(v.replace(/\+/g, " "))));
+    $("btnHexToB64").addEventListener("click", () => runTransform((v) => bytesToBase64(hexToBytes(v))));
+    $("btnB64ToHex").addEventListener("click", () => runTransform((v) => bytesToHex(base64ToBytes(stripDataUri(v)))));
+    $("btnStripDataUri").addEventListener("click", () => runTransform((v) => stripDataUri(v)));
 
     $("btnClear").addEventListener("click", () => {
       inputEl.value = "";
@@ -345,10 +437,7 @@
 
     $("btnCopy").addEventListener("click", async () => {
       const text = outputEl.value;
-      if (!text) {
-        flashStatus("Nothing to copy", false);
-        return;
-      }
+      if (!text) return flashStatus("Nothing to copy", false);
       try {
         await navigator.clipboard.writeText(text);
         flashStatus("Copied!");
@@ -357,6 +446,85 @@
         document.execCommand("copy");
         flashStatus("Copied!");
       }
+    });
+
+    $("btnDownloadImage").addEventListener("click", () => {
+      if (!previewDataUri) return;
+      const m = previewDataUri.match(/^data:([^;]+);/i);
+      const ext = m && m[1].includes("jpeg") ? "jpg" : m && m[1].includes("svg") ? "svg" : "png";
+      const a = document.createElement("a");
+      a.href = previewDataUri;
+      a.download = `decoded-image.${ext}`;
+      a.click();
+      flashStatus("Download started");
+    });
+
+    function formatSize(n) {
+      if (n < 1024) return n + " B";
+      if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+      return (n / (1024 * 1024)).toFixed(2) + " MB";
+    }
+
+    function enableFileActions(enabled) {
+      [btnCopyFileOut, btnSendToText].forEach((btn) => {
+        btn.disabled = !enabled;
+        btn.classList.toggle("opacity-50", !enabled);
+        btn.classList.toggle("cursor-not-allowed", !enabled);
+      });
+    }
+
+    function encodeFile(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUri = reader.result;
+        const raw = dataUri.split(",")[1] || "";
+        const useRaw = document.querySelector('input[name="out-format"]:checked').value === "raw";
+        fileOutput.value = useRaw ? raw : dataUri;
+        fileMeta.textContent = `${file.name} · ${file.type || "unknown"} · ${formatSize(file.size)}`;
+        enableFileActions(true);
+        flashStatus("File encoded");
+      };
+      reader.onerror = () => flashStatus("Could not read file", false);
+      reader.readAsDataURL(file);
+    }
+
+    const drop = $("file-drop");
+    const fileInput = $("file-input");
+    drop.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => { if (e.target.files[0]) encodeFile(e.target.files[0]); });
+    ["dragenter", "dragover"].forEach((ev) => {
+      drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("active"); });
+    });
+    ["dragleave", "drop"].forEach((ev) => {
+      drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("active"); });
+    });
+    drop.addEventListener("drop", (e) => {
+      const f = e.dataTransfer.files[0];
+      if (f) encodeFile(f);
+    });
+
+    document.querySelectorAll('input[name="out-format"]').forEach((r) => {
+      r.addEventListener("change", () => {
+        if (fileInput.files[0]) encodeFile(fileInput.files[0]);
+      });
+    });
+
+    btnCopyFileOut.addEventListener("click", async () => {
+      if (!fileOutput.value) return;
+      try {
+        await navigator.clipboard.writeText(fileOutput.value);
+        flashStatus("Copied!");
+      } catch {
+        flashStatus("Copy failed", false);
+      }
+    });
+
+    btnSendToText.addEventListener("click", () => {
+      inputEl.value = fileOutput.value;
+      setMode("text");
+      updateStats();
+      inputEl.focus();
+      flashStatus("Sent to text panel");
     });
 
     inputEl.addEventListener("input", updateStats);
